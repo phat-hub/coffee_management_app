@@ -127,4 +127,18 @@ class AuthService {
     final pb = await getPocketbaseInstance();
     pb.authStore.clear();
   }
+
+  Future<User?> tryAutoLogin() async {
+    final pb = await getPocketbaseInstance();
+
+    if (pb.authStore.isValid) {
+      final record = pb.authStore.model;
+
+      if (record != null) {
+        return User.fromJson(record.toJson());
+      }
+    }
+
+    return null;
+  }
 }

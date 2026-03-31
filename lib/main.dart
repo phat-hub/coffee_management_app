@@ -18,16 +18,28 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final authManager = AuthManager(); // 🔥 tạo 1 instance duy nhất
+  State<MyApp> createState() => _MyAppState();
+}
 
-    final router = GoRouter(
+class _MyAppState extends State<MyApp> {
+  late final AuthManager authManager;
+  late final GoRouter router;
+
+  @override
+  void initState() {
+    super.initState();
+
+    ///  Chỉ tạo 1 lần duy nhất
+    authManager = AuthManager();
+
+    ///  Router cũng chỉ tạo 1 lần
+    router = GoRouter(
       debugLogDiagnostics: true,
-      initialLocation: '/auth',
+      initialLocation: '/auto-login',
       refreshListenable: authManager,
 
       redirect: (context, state) {
@@ -35,18 +47,19 @@ class MyApp extends StatelessWidget {
         final isOwner = authManager.isOwner;
 
         final isAtAuth = state.fullPath == '/auth';
+        final isAtAutoLogin = state.fullPath == '/auto-login';
 
-        //  chưa login
-        if (!isAuth && !isAtAuth) {
+        ///  Chưa login → về auth
+        if (!isAuth && !isAtAuth && !isAtAutoLogin) {
           return '/auth';
         }
 
-        //  đã login mà vào auth
-        if (isAuth && isAtAuth) {
+        ///  Đã login mà vào auth → về home
+        if (isAuth && (isAtAuth || isAtAutoLogin)) {
           return '/home';
         }
 
-        //  chặn staff vào trang owner
+        ///  Staff không được vào route owner
         final ownerRoutes = ['/staff', '/create-staff', '/edit-staff'];
 
         if (ownerRoutes.contains(state.fullPath) && !isOwner) {
@@ -61,6 +74,35 @@ class MyApp extends StatelessWidget {
         GoRoute(
           path: '/auth',
           builder: (context, state) => const SafeArea(child: AuthScreen()),
+        ),
+
+        /// AUTO LOGIN
+        GoRoute(
+          path: '/auto-login',
+          builder: (context, state) {
+            return FutureBuilder(
+              future: authManager.tryAutoLogin(),
+              builder: (context, snapshot) {
+                return const SafeArea(
+                  child: Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+
+        /// LOGOUT
+        GoRoute(
+          path: '/logout',
+          builder: (context, state) {
+            return FutureBuilder(
+              future: authManager.logout(),
+              builder: (context, snapshot) =>
+                  const SafeArea(child: AuthScreen()),
+            );
+          },
         ),
 
         /// HOME
@@ -89,13 +131,15 @@ class MyApp extends StatelessWidget {
         ),
       ],
     );
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return MultiProvider(
       providers: [ChangeNotifierProvider.value(value: authManager)],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         routerConfig: router,
-
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6F4E37)),

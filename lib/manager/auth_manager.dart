@@ -37,6 +37,11 @@ class AuthManager with ChangeNotifier {
     await fetchStaff();
   }
 
+  Future<void> tryAutoLogin() async {
+    _user = await _service.tryAutoLogin();
+    notifyListeners();
+  }
+
   Future<void> updateStaff(User user) async {
     await _service.updateStaff(user);
     await fetchStaff();
