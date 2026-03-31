@@ -52,9 +52,11 @@ class AppDrawer extends StatelessWidget {
 
             if (user.role == 'owner')
               ListTile(
-                leading: const Icon(Icons.edit),
+                leading: const Icon(Icons.people),
                 title: const Text('Quản lý nhân viên'),
-                onTap: () {},
+                onTap: () {
+                  context.go('/staff');
+                },
               ),
 
             ListTile(

@@ -6,6 +6,10 @@ import 'package:go_router/go_router.dart';
 import 'manager/auth_manager.dart';
 import 'ui/auth/auth_screen.dart';
 import 'ui/home/home_screen.dart';
+import 'ui/auth/staff_screen.dart';
+import 'ui/auth/edit_staff_screen.dart';
+import 'ui/auth/create_staff_screen.dart';
+import 'model/user.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,46 +23,83 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthManager(),
-      child: Consumer<AuthManager>(
-        builder: (context, auth, _) {
-          final router = GoRouter(
-            refreshListenable: auth,
-            initialLocation: '/auth',
-            routes: [
-              GoRoute(
-                path: '/auth',
-                builder: (context, state) => const AuthScreen(),
-              ),
-              GoRoute(
-                path: '/home',
-                builder: (context, state) => const HomeScreen(),
-              ),
-            ],
-            redirect: (context, state) {
-              final loggedIn = auth.isAuth;
-              final goingToAuth = state.matchedLocation == '/auth';
+    final authManager = AuthManager(); // 🔥 tạo 1 instance duy nhất
 
-              if (!loggedIn && !goingToAuth) return '/auth';
-              if (loggedIn && goingToAuth) return '/home';
+    final router = GoRouter(
+      debugLogDiagnostics: true,
+      initialLocation: '/auth',
+      refreshListenable: authManager,
 
-              return null;
-            },
-          );
+      redirect: (context, state) {
+        final isAuth = authManager.isAuth;
+        final isOwner = authManager.isOwner;
 
-          return MaterialApp.router(
-            routerConfig: router,
-            debugShowCheckedModeBanner: false,
+        final isAtAuth = state.fullPath == '/auth';
 
-            theme: ThemeData(
-              useMaterial3: true,
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xFF6F4E37),
-              ),
-            ),
-          );
-        },
+        //  chưa login
+        if (!isAuth && !isAtAuth) {
+          return '/auth';
+        }
+
+        //  đã login mà vào auth
+        if (isAuth && isAtAuth) {
+          return '/home';
+        }
+
+        //  chặn staff vào trang owner
+        final ownerRoutes = ['/staff', '/create-staff', '/edit-staff'];
+
+        if (ownerRoutes.contains(state.fullPath) && !isOwner) {
+          return '/home';
+        }
+
+        return null;
+      },
+
+      routes: [
+        /// AUTH
+        GoRoute(
+          path: '/auth',
+          builder: (context, state) => const SafeArea(child: AuthScreen()),
+        ),
+
+        /// HOME
+        GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+
+        /// STAFF LIST
+        GoRoute(
+          path: '/staff',
+          builder: (context, state) => const StaffScreen(),
+        ),
+
+        /// CREATE STAFF
+        GoRoute(
+          path: '/create-staff',
+          builder: (context, state) =>
+              const SafeArea(child: CreateStaffScreen()),
+        ),
+
+        /// EDIT STAFF
+        GoRoute(
+          path: '/edit-staff',
+          builder: (context, state) {
+            final user = state.extra as User;
+            return SafeArea(child: EditStaffScreen(user: user));
+          },
+        ),
+      ],
+    );
+
+    return MultiProvider(
+      providers: [ChangeNotifierProvider.value(value: authManager)],
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        routerConfig: router,
+
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6F4E37)),
+        ),
       ),
     );
   }

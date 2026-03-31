@@ -10,12 +10,19 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   final email = TextEditingController();
   final pass = TextEditingController();
 
   bool loading = false;
+  bool _obscure = true;
+
+  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
 
   Future<void> login() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() => loading = true);
 
     try {
@@ -49,36 +56,78 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "☕ Coffee Manager",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "☕ Coffee Manager",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  TextField(
-                    controller: email,
-                    decoration: const InputDecoration(labelText: "Email"),
-                  ),
+                    /// EMAIL
+                    TextFormField(
+                      controller: email,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(labelText: "Email"),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Không được để trống';
+                        }
+                        if (!emailRegex.hasMatch(value)) {
+                          return 'Email không hợp lệ';
+                        }
+                        return null;
+                      },
+                    ),
 
-                  TextField(
-                    controller: pass,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: "Password"),
-                  ),
+                    const SizedBox(height: 12),
 
-                  const SizedBox(height: 20),
-
-                  loading
-                      ? const CircularProgressIndicator()
-                      : ElevatedButton(
-                          onPressed: login,
-                          child: const Text("Đăng nhập"),
+                    /// PASSWORD
+                    TextFormField(
+                      controller: pass,
+                      obscureText: _obscure,
+                      decoration: InputDecoration(
+                        labelText: "Mật khẩu",
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscure ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() => _obscure = !_obscure);
+                          },
                         ),
-                ],
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Không được để trống';
+                        }
+                        if (value.length < 8) {
+                          return 'Mật khẩu phải ≥ 8 ký tự';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    loading
+                        ? const CircularProgressIndicator()
+                        : SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: login,
+                              child: const Text("Đăng nhập"),
+                            ),
+                          ),
+                  ],
+                ),
               ),
             ),
           ),

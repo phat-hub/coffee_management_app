@@ -1,5 +1,6 @@
 import 'pocketbase_client.dart';
 import '../model/user.dart';
+import '../ui/shared/app_exception.dart';
 
 class AuthService {
   void Function(User? user)? onAuthChange;
@@ -19,31 +20,55 @@ class AuthService {
   Future<User> login(String email, String password) async {
     final pb = await getPocketbaseInstance();
 
-    final auth = await pb.collection('users').authWithPassword(email, password);
+    try {
+      final auth = await pb
+          .collection('users')
+          .authWithPassword(email, password);
 
-    final user = User.fromJson(auth.record.toJson());
+      final user = User.fromJson(auth.record.toJson());
 
-    if (!user.isActive) {
-      throw Exception('Tài khoản đã bị khóa');
+      return user;
+    } catch (e) {
+      throw AppException('Đăng nhập thất bại');
     }
-
-    return user;
   }
 
   Future<void> createStaff(User user, String password) async {
     final pb = await getPocketbaseInstance();
 
-    await pb
-        .collection('users')
-        .create(
-          body: {
-            ...user.toJson(),
-            'password': password,
-            'passwordConfirm': password,
-            'role': 'staff',
-            'isActive': true,
-          },
-        );
+    try {
+      /// PHONE TRƯỚC
+      final phoneList = await pb
+          .collection('users')
+          .getFullList(filter: 'phoneNumber="${user.phoneNumber}"');
+
+      if (phoneList.isNotEmpty) {
+        throw AppException('Số điện thoại đã tồn tại');
+      }
+
+      await pb
+          .collection('users')
+          .create(
+            body: {
+              ...user.toJson(),
+              'password': password,
+              'passwordConfirm': password,
+              'role': 'staff',
+              'isActive': true,
+            },
+          );
+    } catch (e) {
+      /// giữ lỗi custom
+      if (e is AppException) rethrow;
+
+      final error = e.toString();
+
+      if (error.contains('email')) {
+        throw AppException('Email đã tồn tại');
+      }
+
+      throw AppException('Có lỗi xảy ra');
+    }
   }
 
   Future<List<User>> fetchStaff() async {
@@ -58,7 +83,36 @@ class AuthService {
 
   Future<void> updateStaff(User user) async {
     final pb = await getPocketbaseInstance();
-    await pb.collection('users').update(user.id!, body: user.toJson());
+
+    try {
+      ///  tìm user có cùng phone
+      final list = await pb
+          .collection('users')
+          .getFullList(filter: 'phoneNumber="${user.phoneNumber}"');
+
+      ///  nếu có user khác (id khác) thì báo trùng
+      final isDuplicate = list.any((e) => e.id != user.id);
+
+      if (isDuplicate) {
+        throw AppException('Số điện thoại đã tồn tại');
+      }
+
+      ///  update nếu OK
+      await pb
+          .collection('users')
+          .update(
+            user.id!,
+            body: {
+              'name': user.name,
+              'phoneNumber': user.phoneNumber,
+              'address': user.address,
+            },
+          );
+    } catch (e) {
+      if (e is AppException) rethrow;
+
+      throw AppException('Có lỗi xảy ra');
+    }
   }
 
   Future<void> toggleLock(User user) async {
