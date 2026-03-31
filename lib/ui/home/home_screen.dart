@@ -1,3 +1,4 @@
+import 'package:ct484_project/ui/shared/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../manager/auth_manager.dart';
@@ -7,20 +8,9 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthManager>();
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Coffee Manager ☕"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              auth.logout();
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text("Coffee Manager ☕")),
+      drawer: const AppDrawer(),
     );
   }
 }
