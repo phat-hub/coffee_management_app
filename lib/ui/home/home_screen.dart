@@ -7,6 +7,7 @@ import '../../manager/category_manager.dart';
 import '../../manager/cart_manager.dart';
 import '../../model/product.dart';
 import '../shared/app_drawer.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -232,7 +233,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            // TODO: xử lý tiếp tục mua hoặc checkout
+                            Navigator.pop(context); // đóng modal
+                            context.push(
+                              '/checkout',
+                            ); // chuyển sang trang thanh toán
                           },
                           child: const Text('Tiếp'),
                         ),

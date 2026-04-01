@@ -21,6 +21,7 @@ import 'model/user.dart';
 import 'model/product.dart';
 import 'manager/category_manager.dart';
 import 'manager/cart_manager.dart';
+import 'ui/order/checkout_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -163,6 +164,10 @@ class _MyAppState extends State<MyApp> {
         GoRoute(
           path: '/categories',
           builder: (context, state) => const CategoryManagementScreen(),
+        ),
+        GoRoute(
+          path: '/checkout',
+          builder: (context, state) => const CheckoutScreen(),
         ),
       ],
     );
