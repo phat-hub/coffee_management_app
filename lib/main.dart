@@ -20,6 +20,7 @@ import 'ui/home/category_management_screen.dart';
 import 'model/user.dart';
 import 'model/product.dart';
 import 'manager/category_manager.dart';
+import 'manager/cart_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -174,6 +175,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider.value(value: authManager),
         ChangeNotifierProvider(create: (_) => ProductManager()),
         ChangeNotifierProvider(create: (_) => CategoryManager()),
+        ChangeNotifierProvider(create: (_) => CartManager()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
