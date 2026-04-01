@@ -78,6 +78,14 @@ class AppDrawer extends StatelessWidget {
               ),
 
             ListTile(
+              leading: const Icon(Icons.receipt_long),
+              title: const Text('Đơn hàng'),
+              onTap: () {
+                context.go('/orders');
+              },
+            ),
+
+            ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Đăng xuất'),
               onTap: () {

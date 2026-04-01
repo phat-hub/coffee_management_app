@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../manager/cart_manager.dart';
 import '../../manager/auth_manager.dart';
+import '../../manager/order_manager.dart';
+import 'package:go_router/go_router.dart';
+import '../../model/order.dart';
 
 class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
@@ -85,8 +88,47 @@ class CheckoutScreen extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    // TODO: xử lý thanh toán
+                  onPressed: () async {
+                    final cartManager = context.read<CartManager>();
+                    final authManager = context.read<AuthManager>();
+                    final orderManager = context.read<OrderManager>();
+
+                    if (cartManager.items.isEmpty) return;
+
+                    final now = DateTime.now();
+                    final user = authManager.user;
+
+                    final orderItems = cartManager.items.map((cartItem) {
+                      return OrderItem(
+                        productId: cartItem.product.id!,
+                        title: cartItem.product.title,
+                        price: cartItem.product.price,
+                        quantity: cartItem.quantity,
+                      );
+                    }).toList();
+
+                    final order = Order(
+                      staffName: user?.name ?? "Nhân viên",
+                      staffPhone: user?.phoneNumber ?? "0000000000",
+                      createdAt: now,
+                      items: orderItems,
+                      totalPrice: cartManager.totalPrice,
+                    );
+
+                    try {
+                      // Tạo order trên PocketBase
+                      await orderManager.createOrder(order);
+
+                      // Clear cart
+                      cartManager.clearCart();
+
+                      // Chuyển sang trang hiển thị danh sách order
+                      context.go('/orders');
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Lỗi khi tạo đơn hàng: $e')),
+                      );
+                    }
                   },
                   child: const Text('Thanh toán'),
                 ),

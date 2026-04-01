@@ -22,6 +22,8 @@ import 'model/product.dart';
 import 'manager/category_manager.dart';
 import 'manager/cart_manager.dart';
 import 'ui/order/checkout_screen.dart';
+import 'ui/order/order_list_screen.dart';
+import 'manager/order_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -169,6 +171,10 @@ class _MyAppState extends State<MyApp> {
           path: '/checkout',
           builder: (context, state) => const CheckoutScreen(),
         ),
+        GoRoute(
+          path: '/orders',
+          builder: (context, state) => const OrderListScreen(),
+        ),
       ],
     );
   }
@@ -181,6 +187,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => ProductManager()),
         ChangeNotifierProvider(create: (_) => CategoryManager()),
         ChangeNotifierProvider(create: (_) => CartManager()),
+        ChangeNotifierProvider(create: (_) => OrderManager()),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
