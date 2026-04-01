@@ -17,7 +17,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
 
   final NumberFormat currencyFormat = NumberFormat("#,##0", "vi_VN");
-
   final TextEditingController _searchController = TextEditingController();
 
   String _searchKeyword = '';
@@ -40,6 +39,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final products = context.watch<ProductManager>().products;
     final categories = context.watch<CategoryManager>().categories;
@@ -58,13 +63,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Coffee Manager"), centerTitle: true),
-
       drawer: const AppDrawer(),
-
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                /// SEARCH + FILTER
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -84,7 +88,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           });
                         },
                       ),
-
                       const SizedBox(height: 12),
 
                       DropdownButtonFormField<String>(
@@ -118,6 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
+                /// PRODUCT GRID
                 Expanded(
                   child: filteredProducts.isEmpty
                       ? const Center(
@@ -135,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   crossAxisCount: 2,
                                   crossAxisSpacing: 15,
                                   mainAxisSpacing: 15,
-                                  childAspectRatio: 0.78,
+                                  childAspectRatio: 0.72,
                                 ),
                             itemBuilder: (_, index) {
                               final product = filteredProducts[index];
@@ -147,8 +151,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(18),
                                 ),
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Expanded(
+                                    /// IMAGE FIXED SIZE
+                                    SizedBox(
+                                      height: 150,
+                                      width: double.infinity,
                                       child: ClipRRect(
                                         borderRadius:
                                             const BorderRadius.vertical(
@@ -157,7 +165,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                         child: Image.network(
                                           product.imageUrl,
                                           fit: BoxFit.cover,
-                                          width: double.infinity,
                                           errorBuilder: (_, __, ___) =>
                                               const Center(
                                                 child: Icon(
@@ -169,64 +176,102 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
 
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 10,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Text(
-                                                  product.title,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
+                                    /// INFO
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    product.title,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 15,
+                                                    ),
                                                   ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  '${currencyFormat.format(product.price)} VNĐ',
-                                                  style: const TextStyle(
-                                                    color: Colors.brown,
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
+                                                  const SizedBox(height: 6),
+
+                                                  /// PRICE ONE LINE
+                                                  FittedBox(
+                                                    fit: BoxFit.scaleDown,
+                                                    child: RichText(
+                                                      text: TextSpan(
+                                                        children: [
+                                                          TextSpan(
+                                                            text: currencyFormat
+                                                                .format(
+                                                                  product.price,
+                                                                ),
+                                                            style:
+                                                                const TextStyle(
+                                                                  color: Colors
+                                                                      .brown,
+                                                                  fontSize: 15,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                          ),
+                                                          const TextSpan(
+                                                            text: ' VNĐ',
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.brown,
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
-                                          ),
 
-                                          const SizedBox(width: 8),
+                                            const SizedBox(width: 8),
 
-                                          SizedBox(
-                                            width: 40,
-                                            height: 40,
-                                            child: Material(
-                                              color: Colors.brown.shade50,
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              child: InkWell(
+                                            /// CART BUTTON
+                                            SizedBox(
+                                              width: 42,
+                                              height: 42,
+                                              child: Material(
+                                                color: Colors.brown.shade50,
                                                 borderRadius:
                                                     BorderRadius.circular(12),
-                                                onTap: () {},
-                                                child: const Icon(
-                                                  Icons.shopping_cart_outlined,
-                                                  color: Colors.brown,
-                                                  size: 22,
+                                                child: InkWell(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  onTap: () {
+                                                    // TODO: xử lý giỏ hàng
+                                                  },
+                                                  child: const Icon(
+                                                    Icons
+                                                        .shopping_cart_outlined,
+                                                    color: Colors.brown,
+                                                    size: 22,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
