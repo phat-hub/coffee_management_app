@@ -4,13 +4,20 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
 import 'manager/auth_manager.dart';
+import 'manager/product_manager.dart';
+
 import 'ui/auth/auth_screen.dart';
 import 'ui/home/home_screen.dart';
 import 'ui/auth/staff_screen.dart';
 import 'ui/auth/edit_staff_screen.dart';
 import 'ui/auth/create_staff_screen.dart';
-import 'model/user.dart';
 import 'ui/auth/view_staff_screen.dart';
+
+import 'ui/home/edit_product_screen.dart';
+import 'ui/home/product_management_screen.dart';
+
+import 'model/user.dart';
+import 'model/product.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,13 +41,13 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
 
-    ///  Chỉ tạo 1 lần duy nhất
+    /// tạo 1 instance duy nhất
     authManager = AuthManager();
 
-    ///  Router cũng chỉ tạo 1 lần
+    /// router tạo 1 lần duy nhất
     router = GoRouter(
       debugLogDiagnostics: true,
-      initialLocation: '/auto-login',
+      initialLocation: '/auth',
       refreshListenable: authManager,
 
       redirect: (context, state) {
@@ -48,24 +55,26 @@ class _MyAppState extends State<MyApp> {
         final isOwner = authManager.isOwner;
 
         final isAtAuth = state.fullPath == '/auth';
-        final isAtAutoLogin = state.fullPath == '/auto-login';
 
-        ///  Chưa login → về auth
-        if (!isAuth && !isAtAuth && !isAtAutoLogin) {
+        /// chưa login → về auth
+        if (!isAuth && !isAtAuth) {
           return '/auth';
         }
 
-        ///  Đã login mà vào auth → về home
-        if (isAuth && (isAtAuth || isAtAutoLogin)) {
+        /// đã login mà vào auth → về home
+        if (isAuth && isAtAuth) {
           return '/home';
         }
 
-        ///  Staff không được vào route owner
+        /// route chỉ owner được vào
         final ownerRoutes = [
           '/staff',
           '/create-staff',
           '/edit-staff',
           '/view-staff',
+          '/products',
+          '/create-product',
+          '/edit-product',
         ];
 
         if (ownerRoutes.contains(state.fullPath) && !isOwner) {
@@ -80,23 +89,6 @@ class _MyAppState extends State<MyApp> {
         GoRoute(
           path: '/auth',
           builder: (context, state) => const SafeArea(child: AuthScreen()),
-        ),
-
-        /// AUTO LOGIN
-        GoRoute(
-          path: '/auto-login',
-          builder: (context, state) {
-            return FutureBuilder(
-              future: authManager.tryAutoLogin(),
-              builder: (context, snapshot) {
-                return const SafeArea(
-                  child: Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  ),
-                );
-              },
-            );
-          },
         ),
 
         /// LOGOUT
@@ -114,7 +106,7 @@ class _MyAppState extends State<MyApp> {
         /// HOME
         GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
 
-        /// STAFF LIST
+        /// STAFF
         GoRoute(
           path: '/staff',
           builder: (context, state) => const StaffScreen(),
@@ -135,11 +127,34 @@ class _MyAppState extends State<MyApp> {
             return SafeArea(child: EditStaffScreen(user: user));
           },
         ),
+
+        /// VIEW STAFF
         GoRoute(
           path: '/view-staff',
           builder: (context, state) {
             final user = state.extra as User;
             return SafeArea(child: ViewStaffScreen(user: user));
+          },
+        ),
+
+        /// PRODUCT LIST
+        GoRoute(
+          path: '/products',
+          builder: (context, state) => const ProductManagementScreen(),
+        ),
+
+        /// CREATE PRODUCT
+        GoRoute(
+          path: '/create-product',
+          builder: (context, state) => const EditProductScreen(),
+        ),
+
+        /// EDIT PRODUCT
+        GoRoute(
+          path: '/edit-product',
+          builder: (context, state) {
+            final product = state.extra as Product;
+            return EditProductScreen(product: product);
           },
         ),
       ],
@@ -149,7 +164,10 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider.value(value: authManager)],
+      providers: [
+        ChangeNotifierProvider.value(value: authManager),
+        ChangeNotifierProvider(create: (_) => ProductManager()),
+      ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         routerConfig: router,

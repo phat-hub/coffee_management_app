@@ -59,6 +59,15 @@ class AppDrawer extends StatelessWidget {
                 },
               ),
 
+            if (user.role == 'owner')
+              ListTile(
+                leading: const Icon(Icons.local_cafe),
+                title: const Text('Quản lý sản phẩm'),
+                onTap: () {
+                  context.go('/products');
+                },
+              ),
+
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Đăng xuất'),

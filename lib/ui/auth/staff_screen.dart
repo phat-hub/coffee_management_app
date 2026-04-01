@@ -25,7 +25,7 @@ class _StaffScreenState extends State<StaffScreen> {
     final auth = context.watch<AuthManager>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Quản lý nhân viên')),
+      appBar: AppBar(title: const Text('Quản lý nhân viên'), centerTitle: true),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/create-staff'),
         child: const Icon(Icons.add),
