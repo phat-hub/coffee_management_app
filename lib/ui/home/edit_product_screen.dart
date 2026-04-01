@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../manager/product_manager.dart';
+import '../../manager/category_manager.dart';
 import '../../model/product.dart';
 
 class EditProductScreen extends StatefulWidget {
@@ -26,6 +27,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
   File? _imageFile;
   String _imageUrl = '';
 
+  /// THÊM BIẾN CATEGORY
+  String? _selectedCategoryId;
+
   @override
   void initState() {
     super.initState();
@@ -39,6 +43,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
     );
 
     _imageUrl = widget.product?.imageUrl ?? '';
+
+    /// GIỮ LẠI CATEGORY KHI SỬA
+    _selectedCategoryId = widget.product?.categoryId;
+
+    /// LOAD DANH MỤC
+    Future.microtask(() {
+      context.read<CategoryManager>().fetchCategories();
+    });
   }
 
   Future<void> pickImage() async {
@@ -55,6 +67,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
   Future<void> saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
 
+    /// CHECK CATEGORY
+    if (_selectedCategoryId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Vui lòng chọn danh mục')));
+      return;
+    }
+
     if (_imageFile == null && _imageUrl.isEmpty) {
       ScaffoldMessenger.of(
         context,
@@ -66,6 +86,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       id: widget.product?.id,
       title: _titleController.text.trim(),
       price: double.parse(_priceController.text.trim()),
+      categoryId: _selectedCategoryId!,
       imageFile: _imageFile,
       imageUrl: _imageUrl,
     );
@@ -124,7 +145,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       : const Center(child: Icon(Icons.add_a_photo, size: 50)),
                 ),
               ),
+
               const SizedBox(height: 20),
+
+              /// TÊN SẢN PHẨM
               TextFormField(
                 controller: _titleController,
                 decoration: InputDecoration(
@@ -140,7 +164,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   return null;
                 },
               ),
+
               const SizedBox(height: 16),
+
+              /// GIÁ
               TextFormField(
                 controller: _priceController,
                 keyboardType: TextInputType.number,
@@ -155,8 +182,41 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   if (value == null || value.trim().isEmpty) {
                     return 'Không được để trống';
                   }
-
                   return null;
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              /// DROPDOWN DANH MỤC
+              Consumer<CategoryManager>(
+                builder: (_, manager, __) {
+                  return DropdownButtonFormField<String>(
+                    value: _selectedCategoryId,
+                    decoration: InputDecoration(
+                      labelText: 'Danh mục',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    items: manager.categories.map((category) {
+                      return DropdownMenuItem(
+                        value: category.id,
+                        child: Text(category.title),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategoryId = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Vui lòng chọn danh mục';
+                      }
+                      return null;
+                    },
+                  );
                 },
               ),
             ],

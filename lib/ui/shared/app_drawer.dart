@@ -61,6 +61,15 @@ class AppDrawer extends StatelessWidget {
 
             if (user.role == 'owner')
               ListTile(
+                leading: const Icon(Icons.category_outlined),
+                title: const Text('Quản lý danh mục'),
+                onTap: () {
+                  context.go('/categories');
+                },
+              ),
+
+            if (user.role == 'owner')
+              ListTile(
                 leading: const Icon(Icons.local_cafe),
                 title: const Text('Quản lý sản phẩm'),
                 onTap: () {
