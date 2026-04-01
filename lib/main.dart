@@ -10,6 +10,7 @@ import 'ui/auth/staff_screen.dart';
 import 'ui/auth/edit_staff_screen.dart';
 import 'ui/auth/create_staff_screen.dart';
 import 'model/user.dart';
+import 'ui/auth/view_staff_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,7 +61,12 @@ class _MyAppState extends State<MyApp> {
         }
 
         ///  Staff không được vào route owner
-        final ownerRoutes = ['/staff', '/create-staff', '/edit-staff'];
+        final ownerRoutes = [
+          '/staff',
+          '/create-staff',
+          '/edit-staff',
+          '/view-staff',
+        ];
 
         if (ownerRoutes.contains(state.fullPath) && !isOwner) {
           return '/home';
@@ -127,6 +133,13 @@ class _MyAppState extends State<MyApp> {
           builder: (context, state) {
             final user = state.extra as User;
             return SafeArea(child: EditStaffScreen(user: user));
+          },
+        ),
+        GoRoute(
+          path: '/view-staff',
+          builder: (context, state) {
+            final user = state.extra as User;
+            return SafeArea(child: ViewStaffScreen(user: user));
           },
         ),
       ],

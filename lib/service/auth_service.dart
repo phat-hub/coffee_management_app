@@ -55,6 +55,7 @@ class AuthService {
               'passwordConfirm': password,
               'role': 'staff',
               'isActive': true,
+              'emailVisibility': true,
             },
           );
     } catch (e) {
@@ -77,6 +78,10 @@ class AuthService {
     final list = await pb
         .collection('users')
         .getFullList(filter: 'role="staff"');
+
+    for (final item in list) {
+      print('POCKETBASE RECORD: ${item.toJson()}');
+    }
 
     return list.map((e) => User.fromJson(e.toJson())).toList();
   }

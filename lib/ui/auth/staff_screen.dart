@@ -25,7 +25,7 @@ class _StaffScreenState extends State<StaffScreen> {
     final auth = context.watch<AuthManager>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('👨‍💼 Quản lý nhân viên')),
+      appBar: AppBar(title: const Text('Quản lý nhân viên')),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/create-staff'),
         child: const Icon(Icons.add),
@@ -45,11 +45,19 @@ class _StaffScreenState extends State<StaffScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
+                    icon: const Icon(Icons.visibility),
+                    onPressed: () {
+                      context.push('/view-staff', extra: user);
+                    },
+                  ),
+
+                  IconButton(
                     icon: const Icon(Icons.edit),
                     onPressed: () {
                       context.push('/edit-staff', extra: user);
                     },
                   ),
+
                   IconButton(
                     icon: Icon(
                       user.isActive ? Icons.lock_open : Icons.lock,
