@@ -14,10 +14,18 @@ class ProductService {
   Future<List<Product>> fetchProducts() async {
     final pb = await getPocketbaseInstance();
 
-    final list = await pb.collection('products').getFullList();
+    final list = await pb
+        .collection('products')
+        .getFullList(expand: 'categoryId');
 
     return list.map((e) {
-      return Product.fromJson({...e.toJson(), 'imageUrl': _getImageUrl(pb, e)});
+      final expand = e.expand['categoryId']?.first;
+
+      return Product.fromJson({
+        ...e.toJson(),
+        'imageUrl': _getImageUrl(pb, e),
+        'categoryName': expand?.getStringValue('title') ?? '',
+      });
     }).toList();
   }
 
