@@ -8,16 +8,18 @@ class OrderService {
     await pb
         .collection('orders')
         .create(
-          body: {
-            ...order.toJson(),
-            'createdBy': pb.authStore.record?.id, // id user hiện tại
-          },
+          body: {...order.toJson(), 'createdBy': pb.authStore.record?.id},
         );
   }
 
   Future<List<Order>> fetchOrders() async {
     final pb = await getPocketbaseInstance();
-    final list = await pb.collection('orders').getFullList();
+
+    final list = await pb
+        .collection('orders')
+        .getFullList(
+          sort: '-createdAt', //  mới nhất trước
+        );
 
     return list.map((e) {
       final items = (e.getListValue('items')).map((item) {
@@ -35,7 +37,7 @@ class OrderService {
         staffPhone: e.getStringValue('staffPhone'),
         createdAt: DateTime.parse(e.getStringValue('createdAt')),
         items: items,
-        totalPrice: (e.getDoubleValue('totalPrice')),
+        totalPrice: e.getDoubleValue('totalPrice'),
       );
     }).toList();
   }

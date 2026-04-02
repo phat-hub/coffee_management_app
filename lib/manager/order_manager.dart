@@ -12,6 +12,10 @@ class OrderManager with ChangeNotifier {
 
   Future<void> fetchOrders() async {
     _orders = await _service.fetchOrders();
+
+    //  backup sort nếu backend không sort
+    _orders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
     notifyListeners();
   }
 
