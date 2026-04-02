@@ -23,12 +23,46 @@ class _CreateStaffScreenState extends State<CreateStaffScreen> {
   bool _obscurePassword = true;
   bool loading = false;
 
-  /// Regex
   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
   final phoneRegex = RegExp(r'^(0|\+84)[0-9]{9}$');
 
+  /// 🔥 VALIDATE KHÔNG GÂY GIẬT
+  String? _validate() {
+    if (name.text.trim().isEmpty) return 'Không được để trống tên';
+
+    if (phone.text.isEmpty) return 'Không được để trống số điện thoại';
+    if (!phoneRegex.hasMatch(phone.text)) return 'Số điện thoại không hợp lệ';
+
+    if (email.text.isEmpty) return 'Không được để trống email';
+    if (!emailRegex.hasMatch(email.text)) return 'Email không hợp lệ';
+
+    if (address.text.isEmpty) return 'Không được để trống địa chỉ';
+
+    if (password.text.isEmpty) return 'Không được để trống mật khẩu';
+    if (password.text.length < 8) return 'Mật khẩu phải ≥ 8 ký tự';
+
+    return null;
+  }
+
   Future<void> submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    final error = _validate();
+
+    if (error != null) {
+      FocusScope.of(context).unfocus(); //  tắt bàn phím
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(error),
+            behavior: SnackBarBehavior.floating, //  màu mặc định
+          ),
+        );
+
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
 
     setState(() => loading = true);
 
@@ -46,7 +80,6 @@ class _CreateStaffScreenState extends State<CreateStaffScreen> {
 
       context.go('/staff');
     } catch (e) {
-      /// bắt lỗi email trùng từ PocketBase
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
@@ -58,108 +91,60 @@ class _CreateStaffScreenState extends State<CreateStaffScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false, // 🔥 giữ UI cố định
+
       appBar: AppBar(title: const Text('Thêm nhân viên')),
+
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              /// NAME
-              TextFormField(
-                controller: name,
-                decoration: const InputDecoration(labelText: 'Họ và tên'),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Không được để trống tên';
-                  }
-                  return null;
-                },
-              ),
+        child: Column(
+          children: [
+            TextField(
+              controller: name,
+              decoration: const InputDecoration(labelText: 'Họ và tên'),
+            ),
 
-              /// PHONE
-              TextFormField(
-                controller: phone,
-                decoration: const InputDecoration(labelText: 'Số điện thoại'),
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Không được để trống';
-                  }
+            TextField(
+              controller: phone,
+              decoration: const InputDecoration(labelText: 'Số điện thoại'),
+              keyboardType: TextInputType.phone,
+            ),
 
-                  if (!phoneRegex.hasMatch(value)) {
-                    return 'Số điện thoại không hợp lệ';
-                  }
+            TextField(
+              controller: email,
+              decoration: const InputDecoration(labelText: 'Email'),
+              keyboardType: TextInputType.emailAddress,
+            ),
 
-                  return null;
-                },
-              ),
+            TextField(
+              controller: address,
+              decoration: const InputDecoration(labelText: 'Địa chỉ'),
+            ),
 
-              /// EMAIL
-              TextFormField(
-                controller: email,
-                decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Không được để trống';
-                  }
-                  if (!emailRegex.hasMatch(value)) {
-                    return 'Email không hợp lệ';
-                  }
-                  return null;
-                },
-              ),
-
-              /// ADDRESS
-              TextFormField(
-                controller: address,
-                decoration: const InputDecoration(labelText: 'Địa chỉ'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Không được để trống';
-                  }
-                  return null;
-                },
-              ),
-
-              /// PASSWORD
-              TextFormField(
-                controller: password,
-                obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  labelText: 'Mật khẩu',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
+            TextField(
+              controller: password,
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
+                labelText: 'Mật khẩu',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
                   ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Không được để trống';
-                  }
-                  if (value.length < 8) {
-                    return 'Mật khẩu phải ≥ 8 ký tự';
-                  }
-                  return null;
-                },
               ),
+            ),
 
-              const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-              loading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(onPressed: submit, child: const Text('Tạo')),
-            ],
-          ),
+            loading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(onPressed: submit, child: const Text('Tạo')),
+          ],
         ),
       ),
     );
