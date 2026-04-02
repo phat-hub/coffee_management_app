@@ -121,20 +121,24 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
     );
 
     if (confirmed == true) {
-      await context.read<CategoryManager>().deleteCategory(category.id!);
+      try {
+        await context.read<CategoryManager>().deleteCategory(category.id!);
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Xóa danh mục thành công'),
-          duration: const Duration(milliseconds: 1000),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Xóa danh mục thành công')),
+        );
+      } catch (e) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            behavior: SnackBarBehavior.floating,
           ),
-        ),
-      );
+        );
+      }
     }
   }
 

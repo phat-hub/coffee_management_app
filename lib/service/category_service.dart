@@ -1,5 +1,6 @@
 import '../model/category.dart';
 import 'pocketbase_client.dart';
+import '../ui/shared/app_exception.dart';
 
 class CategoryService {
   Future<List<Category>> fetchCategories() async {
@@ -30,6 +31,17 @@ class CategoryService {
 
   Future<void> deleteCategory(String id) async {
     final pb = await getPocketbaseInstance();
+
+    //  kiểm tra có product thuộc category này không
+    final products = await pb
+        .collection('products')
+        .getFullList(filter: 'categoryId = "$id"');
+
+    if (products.isNotEmpty) {
+      throw AppException(
+        'Không thể xóa danh mục vì có sản phẩm thuộc danh mục này',
+      );
+    }
 
     await pb.collection('categories').delete(id);
   }
