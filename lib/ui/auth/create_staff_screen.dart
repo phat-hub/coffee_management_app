@@ -12,8 +12,6 @@ class CreateStaffScreen extends StatefulWidget {
 }
 
 class _CreateStaffScreenState extends State<CreateStaffScreen> {
-  final _formKey = GlobalKey<FormState>();
-
   final name = TextEditingController();
   final phone = TextEditingController();
   final email = TextEditingController();
