@@ -56,13 +56,24 @@ class _CategoryManagementScreenState extends State<CategoryManagementScreen> {
 
                 final manager = context.read<CategoryManager>();
 
-                if (category == null) {
-                  await manager.createCategory(Category(title: title));
-                } else {
-                  await manager.updateCategory(category.copyWith(title: title));
-                }
+                try {
+                  if (category == null) {
+                    await manager.createCategory(Category(title: title));
+                  } else {
+                    await manager.updateCategory(
+                      category.copyWith(title: title),
+                    );
+                  }
 
-                if (mounted) Navigator.pop(context);
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString()),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
               },
               child: const Text('Lưu'),
             ),
