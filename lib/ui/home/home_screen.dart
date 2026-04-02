@@ -233,10 +233,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pop(context); // đóng modal
-                            context.push(
-                              '/checkout',
-                            ); // chuyển sang trang thanh toán
+                            if (cart.items.isEmpty) {
+                              Navigator.pop(context); // đóng modal trước
+
+                              Future.delayed(
+                                const Duration(milliseconds: 200),
+                                () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Vui lòng chọn sản phẩm'),
+                                    ),
+                                  );
+                                },
+                              );
+
+                              return;
+                            }
+
+                            Navigator.pop(context);
+                            context.push('/checkout');
                           },
                           child: const Text('Tiếp'),
                         ),
