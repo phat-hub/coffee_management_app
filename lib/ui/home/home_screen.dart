@@ -361,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   crossAxisCount: 2,
                                   crossAxisSpacing: 15,
                                   mainAxisSpacing: 15,
-                                  childAspectRatio: 0.72,
+                                  childAspectRatio: 0.65,
                                 ),
                             itemBuilder: (_, index) {
                               final product = filteredProducts[index];
@@ -414,15 +414,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(
-                                                    product.title,
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 15,
+                                                  SizedBox(
+                                                    width: double.infinity,
+                                                    child: Text(
+                                                      product.title,
+                                                      maxLines: 2,
+                                                      softWrap: true,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 13,
+                                                        height: 1.3,
+                                                      ),
                                                     ),
                                                   ),
                                                   const SizedBox(height: 6),
@@ -434,7 +439,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       '${currencyFormat.format(product.price)} VNĐ',
                                                       style: const TextStyle(
                                                         color: Colors.brown,
-                                                        fontSize: 15,
+                                                        fontSize: 13,
                                                         fontWeight:
                                                             FontWeight.bold,
                                                       ),
