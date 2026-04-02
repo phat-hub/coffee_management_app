@@ -24,6 +24,7 @@ import 'manager/cart_manager.dart';
 import 'ui/order/checkout_screen.dart';
 import 'ui/order/order_list_screen.dart';
 import 'manager/order_manager.dart';
+import 'ui/order/stats_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -174,6 +175,10 @@ class _MyAppState extends State<MyApp> {
         GoRoute(
           path: '/orders',
           builder: (context, state) => const OrderListScreen(),
+        ),
+        GoRoute(
+          path: '/stats',
+          builder: (context, state) => const StatsScreen(),
         ),
       ],
     );
