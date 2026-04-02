@@ -35,13 +35,16 @@ class _StatsScreenState extends State<StatsScreen> {
     final entries = data.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
+    final topEntries = entries.take(3).toList(); //  TOP 3
+
     return SizedBox(
-      height: 220,
+      height: 260,
       child: BarChart(
         BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          barGroups: List.generate(entries.length, (index) {
-            final e = entries[index];
+          alignment: BarChartAlignment.spaceEvenly,
+
+          barGroups: List.generate(topEntries.length, (index) {
+            final e = topEntries[index];
 
             return BarChartGroupData(
               x: index,
@@ -53,25 +56,62 @@ class _StatsScreenState extends State<StatsScreen> {
               ],
             );
           }),
+
           titlesData: FlTitlesData(
+            /// ===== TRỤC Y =====
             leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true)),
+
+            /// ===== TÊN SẢN PHẨM (DƯỚI) =====
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
+                reservedSize: 50,
                 getTitlesWidget: (value, meta) {
                   final index = value.toInt();
-                  if (index >= entries.length) return const SizedBox();
+                  if (index >= topEntries.length) {
+                    return const SizedBox();
+                  }
 
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Text(
-                      entries[index].key,
-                      style: const TextStyle(fontSize: 10),
+                    child: SizedBox(
+                      width: 90,
+                      child: Text(
+                        topEntries[index].key,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 10),
+                      ),
                     ),
                   );
                 },
               ),
             ),
+
+            /// ===== SỐ LƯỢNG (TRÊN CỘT) =====
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, meta) {
+                  final index = value.toInt();
+                  if (index >= topEntries.length) {
+                    return const SizedBox();
+                  }
+
+                  return Text(
+                    "${topEntries[index].value}", //  số lượng bán
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            ///  TẮT TRỤC PHẢI
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
         ),
       ),
@@ -105,11 +145,11 @@ class _StatsScreenState extends State<StatsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text("Thống kê"), centerTitle: true),
       drawer: const AppDrawer(),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            /// ===== CHỌN PERIOD =====
+            /// PERIOD
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -139,7 +179,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
             const SizedBox(height: 16),
 
-            /// ===== CHỌN DATE =====
+            /// DATE PICKER
             GestureDetector(
               onTap: () async {
                 final picked = await showDatePicker(
@@ -183,7 +223,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
             const SizedBox(height: 20),
 
-            /// ===== DOANH THU =====
+            /// REVENUE
             Card(
               elevation: 5,
               shape: RoundedRectangleBorder(
@@ -196,7 +236,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    color: Colors.green, // ✅ màu xanh
+                    color: Colors.green,
                   ),
                 ),
               ),
@@ -204,7 +244,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
             const SizedBox(height: 20),
 
-            /// ===== CHART =====
+            /// CHART
             if (result.productQuantity.isNotEmpty)
               Card(
                 elevation: 5,
@@ -219,7 +259,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
             const SizedBox(height: 16),
 
-            /// ===== TITLE =====
+            /// TITLE
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -234,38 +274,36 @@ class _StatsScreenState extends State<StatsScreen> {
 
             const SizedBox(height: 10),
 
-            /// ===== LIST =====
-            Expanded(
-              child: sorted.isEmpty
-                  ? const Center(child: Text("Không có dữ liệu"))
-                  : ListView.builder(
-                      itemCount: sorted.length,
-                      itemBuilder: (context, index) {
-                        final entry = sorted[index];
+            /// LIST
+            ListView.builder(
+              itemCount: sorted.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                final entry = sorted[index];
 
-                        return Card(
-                          elevation: 3,
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.brown.shade100,
-                              child: Text("${index + 1}"),
-                            ),
-                            title: Text(entry.key),
-                            trailing: Text(
-                              "${entry.value}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                return Card(
+                  elevation: 3,
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.brown.shade100,
+                      child: Text("${index + 1}"),
                     ),
+                    title: Text(entry.key),
+                    trailing: Text(
+                      "${entry.value}",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
