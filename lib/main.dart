@@ -46,6 +46,26 @@ class _MyAppState extends State<MyApp> {
   late final AuthManager authManager;
   late final GoRouter router;
 
+  Page<dynamic> buildPageWithTransition({
+    required Widget child,
+    required GoRouterState state,
+  }) {
+    return CustomTransitionPage(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 300),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween(begin: 0.95, end: 1.0).animate(animation),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -113,12 +133,17 @@ class _MyAppState extends State<MyApp> {
         ),
 
         /// HOME
-        GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+        GoRoute(
+          path: '/home',
+          pageBuilder: (context, state) =>
+              buildPageWithTransition(child: const HomeScreen(), state: state),
+        ),
 
         /// STAFF
         GoRoute(
           path: '/staff',
-          builder: (context, state) => const StaffScreen(),
+          pageBuilder: (context, state) =>
+              buildPageWithTransition(child: const StaffScreen(), state: state),
         ),
 
         /// CREATE STAFF
@@ -140,16 +165,22 @@ class _MyAppState extends State<MyApp> {
         /// VIEW STAFF
         GoRoute(
           path: '/view-staff',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final user = state.extra as User;
-            return SafeArea(child: ViewStaffScreen(user: user));
+            return buildPageWithTransition(
+              child: ViewStaffScreen(user: user),
+              state: state,
+            );
           },
         ),
 
         /// PRODUCT LIST
         GoRoute(
           path: '/products',
-          builder: (context, state) => const ProductManagementScreen(),
+          pageBuilder: (context, state) => buildPageWithTransition(
+            child: const ProductManagementScreen(),
+            state: state,
+          ),
         ),
 
         /// CREATE PRODUCT
@@ -168,7 +199,10 @@ class _MyAppState extends State<MyApp> {
         ),
         GoRoute(
           path: '/categories',
-          builder: (context, state) => const CategoryManagementScreen(),
+          pageBuilder: (context, state) => buildPageWithTransition(
+            child: const CategoryManagementScreen(),
+            state: state,
+          ),
         ),
         GoRoute(
           path: '/checkout',
@@ -176,11 +210,15 @@ class _MyAppState extends State<MyApp> {
         ),
         GoRoute(
           path: '/orders',
-          builder: (context, state) => const OrderListScreen(),
+          pageBuilder: (context, state) => buildPageWithTransition(
+            child: const OrderListScreen(),
+            state: state,
+          ),
         ),
         GoRoute(
           path: '/stats',
-          builder: (context, state) => const StatsScreen(),
+          pageBuilder: (context, state) =>
+              buildPageWithTransition(child: const StatsScreen(), state: state),
         ),
       ],
     );
