@@ -6,6 +6,7 @@ import '../../manager/auth_manager.dart';
 import '../../manager/order_manager.dart';
 import 'package:go_router/go_router.dart';
 import '../../model/order.dart';
+import '../../service/notification_service.dart';
 
 class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
@@ -118,6 +119,10 @@ class CheckoutScreen extends StatelessWidget {
                     try {
                       // Tạo order trên PocketBase
                       await orderManager.createOrder(order);
+                      await NotificationService.showNotification(
+                        title: 'Thanh toán thành công',
+                        body: 'Đơn hàng đã được tạo!',
+                      );
 
                       // Clear cart
                       cartManager.clearCart();

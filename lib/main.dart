@@ -25,10 +25,12 @@ import 'ui/order/checkout_screen.dart';
 import 'ui/order/order_list_screen.dart';
 import 'manager/order_manager.dart';
 import 'ui/order/stats_screen.dart';
+import 'service/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
+  await NotificationService.init();
 
   runApp(const MyApp());
 }
